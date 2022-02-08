@@ -269,6 +269,7 @@ namespace fractals
     }
     public partial class Form1 : Form
     {
+        public static double tolerance = 1e-2;
         public Form1()
         {
             InitializeComponent();
@@ -285,61 +286,53 @@ namespace fractals
         {       
              
             AllocConsole();
-            string s = "x^13-1";
+            string s = "x^5-1";
             Console.WriteLine("lol");
-            Bitmap myBitmap = new Bitmap(@"C:\Users\user\Desktop\intel.png");
+            Bitmap myBitmap = new Bitmap(@"R:\imgsmall.png");
             polynomial u = new polynomial(s);
-            root[] rs = new root[u.get_degree()];
-            HashSet<Tuple<double, double>> roots = new HashSet<Tuple<double, double>>();
-            get_roots(u, ref roots, u.get_degree()); //root finding algorithm
-            int h = 0;
-            foreach (var a in roots)
+            List<root> roots = get_roots(u); //root finding algorithm
+            if(roots.Count != u.get_degree())
             {
-                rs[h] = new root(h, a.Item1, a.Item2);
-                h++;
+                Console.WriteLine($"Not all roots found! {roots.Count}/{u.get_degree()}");
             }
-             Stopwatch stop = new Stopwatch();
+            Stopwatch stop = new Stopwatch();
             stop.Start();
             int ab = myBitmap.Width / 2;
-            int ba = myBitmap.Height/ 2;
-            /*Parallel.For(0, ab * 2, (offset) =>
-              {
-                  int Xcount = offset;
-                  for (int Ycount = 0; Ycount < ba * 2; Ycount++)
-                  {
-                      get_root((double)3 * Xcount / ab - 3, ((double)3 * Ycount / ba - 3), Xcount, Ycount, ref u, ref rs);
-                  }
-              });*/
+            int ba = myBitmap.Height / 2;
+            int nonSet = 0;
             for (int Xcount = 0; Xcount <ab*2; Xcount++) //sets pixel colors
             {
                 
                 for (int Ycount = 0; Ycount < ba*2; Ycount++)
                 {
-                   
-                        get_root((double)3 * Xcount / ab - 3, ((double)3 * Ycount / ba - 3), Xcount, Ycount, ref u, ref rs, myBitmap);
-                    
+                    root g = get_root((double)3 * Xcount / ab - 3, ((double)3 * Ycount / ba - 3), Xcount, Ycount, u, roots);
+                    if (g != null) myBitmap.SetPixel(Xcount, Ycount, Color.FromArgb(g.colors[g.x, 0], g.colors[g.x, 1], g.colors[g.x, 2])); // remove others for full precision    
+                    else nonSet++;
                 }
-                e.Graphics.DrawImage(myBitmap, 0, 0, myBitmap.Width,
-          myBitmap.Height);
-            }          
-            
-
-
-            /*e.Graphics.DrawImage(myBitmap, 0, 0, myBitmap.Width,
-               myBitmap.Height);*/
+                e.Graphics.DrawImage(myBitmap, 0, 0, myBitmap.Width, myBitmap.Height);
+            }
+            Console.WriteLine($"Non set: {nonSet}");
             return;
         }
-        static void get_roots(polynomial u, ref HashSet<Tuple<double, double>> roots, int degree)
+        static List<root> get_roots(polynomial u)
         {
+            int degree = u.get_degree();
+            List<root> roots = new List<root>();
             for (double i = 0; i < 300; i++)
             {
                 for (double k = 0; k < 300; k++)
                 {
                     double[] x = getroots((k - 150) / 75, (i - 150) / 75, u); //random gen prolly better
-                    roots.Add(Tuple.Create(Math.Round(x[0], 2), Math.Round(x[1], 2)));
-                    if (roots.Count >= degree) return;
+
+                    if(!roots.Any(r => doubles_equal(r.real, x[0]) && doubles_equal(r.img, x[1])))
+                    {
+                        roots.Add(new root(roots.Count, x[0], x[1]));
+                    }
+                    if (roots.Count >= degree) return roots;
                 }
             }
+
+            return roots;
         }
         static double[] getroots(double x, double y, polynomial u)
         {
@@ -354,28 +347,30 @@ namespace fractals
             }
             return nauja;
         }
-        static void get_root(double x, double y, int A, int B, ref polynomial u, ref root[] a, Bitmap map)
+        static bool doubles_equal(double a, double b)
+        {
+            return Math.Abs(a - b) <= tolerance;
+        }
+        static root get_root(double x, double y, int A, int B, polynomial u, List<root> a)
         {
             double[] nauja = new double[2];
             nauja[0] = x;
             nauja[1] = y;
             int i = 0;
-            bool br = false;
            
-            while (i < 1000 && br == false)
+            while (i < 1000)
             {
                 nauja = u.get_aproximation(nauja[0], nauja[1]);
                 foreach (var g in a)
                 {
-                    if (Math.Round(u.get_aproximation(nauja[0], nauja[1])[0], 2) == g.real && Math.Round(u.get_aproximation(nauja[0], nauja[1])[1], 2) == g.img)
-                    {                       
-                        map.SetPixel(A, B, Color.FromArgb(g.colors[g.x,0], g.colors[g.x, 1], g.colors[g.x, 2])); // remove others for full precision                                                                 
-                        br = true;
-                        break;
+                    if (doubles_equal(nauja[0], g.real) && doubles_equal(nauja[1], g.img))
+                    {
+                        return g;
                     }
                 } 
                 i++;
-            }        
+            }
+            return null;
         }
     }
  }
