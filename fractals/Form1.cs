@@ -203,15 +203,9 @@ namespace fractals
         }
         public int get_degree()
         {
-            List<int> degrees = new List<int>();
-            foreach (var a in vals)
-            {
-                degrees.Add(a.power);
-            }
-            degrees.Sort();
-            return degrees[degrees.Count - 1];
+            return vals.Max(v => v.power);
         }
-        public double[] get_aproximation(double a, double b) //main function, employs x1 = x0-P(x)/P'(x)
+        public double[] get_aproximation(double a, double b, out double anew, out double bnew) //main function, employs x1 = x0-P(x)/P'(x)
         {
             img = 0;
             real = 0;
@@ -262,8 +256,8 @@ namespace fractals
             }
             pol_derv_val[0] = real;
             pol_derv_val[1] = img;
-            output[0] = a - ((pol_val[1] * pol_derv_val[1] + pol_val[0] * pol_derv_val[0]) / (pol_derv_val[0] * pol_derv_val[0] + pol_derv_val[1] * pol_derv_val[1]));
-            output[1] = b - (pol_val[1] * pol_derv_val[0] - pol_val[0] * pol_derv_val[1]) / (pol_derv_val[0] * pol_derv_val[0] + pol_derv_val[1] * pol_derv_val[1]);         
+            anew = a - ((pol_val[1] * pol_derv_val[1] + pol_val[0] * pol_derv_val[0]) / (pol_derv_val[0] * pol_derv_val[0] + pol_derv_val[1] * pol_derv_val[1]));
+            bnew = b - (pol_val[1] * pol_derv_val[0] - pol_val[0] * pol_derv_val[1]) / (pol_derv_val[0] * pol_derv_val[0] + pol_derv_val[1] * pol_derv_val[1]);         
             return output;
         }
     }
@@ -291,6 +285,10 @@ namespace fractals
             Bitmap myBitmap = new Bitmap(@"R:\imgsmall.png");
             polynomial u = new polynomial(s);
             List<root> roots = get_roots(u); //root finding algorithm
+            foreach(var r in roots)
+            {
+                Console.WriteLine($"Root {r.real} {r.img}");
+            }
             if(roots.Count != u.get_degree())
             {
                 Console.WriteLine($"Not all roots found! {roots.Count}/{u.get_degree()}");
@@ -305,7 +303,7 @@ namespace fractals
                 
                 for (int Ycount = 0; Ycount < ba*2; Ycount++)
                 {
-                    root g = get_root((double)3 * Xcount / ab - 3, ((double)3 * Ycount / ba - 3), Xcount, Ycount, u, roots);
+                    root g = get_root((double)3 * Xcount / ab - 3, ((double)3 * Ycount / ba - 3), u, roots);
                     if (g != null) myBitmap.SetPixel(Xcount, Ycount, Color.FromArgb(g.colors[g.x, 0], g.colors[g.x, 1], g.colors[g.x, 2])); // remove others for full precision    
                     else nonSet++;
                 }
@@ -336,39 +334,30 @@ namespace fractals
         }
         static double[] getroots(double x, double y, polynomial u)
         {
-            double[] nauja = new double[2];
-            nauja[0] = x;
-            nauja[1] = y;
             int i = 0;
             while (i < 500) //100 permutations should be enough
             {
-                nauja = u.get_aproximation(nauja[0], nauja[1]);
+                u.get_aproximation(x, y, out x, out y);
                 i++;
             }
-            return nauja;
+            return new double[] {x, y};
         }
         static bool doubles_equal(double a, double b)
         {
             return Math.Abs(a - b) <= tolerance;
         }
-        static root get_root(double x, double y, int A, int B, polynomial u, List<root> a)
+        static root get_root(double x, double y, polynomial u, List<root> a)
         {
-            double[] nauja = new double[2];
-            nauja[0] = x;
-            nauja[1] = y;
-            int i = 0;
-           
-            while (i < 1000)
+            for(int i = 0; i < 1000; i++)
             {
-                nauja = u.get_aproximation(nauja[0], nauja[1]);
+                u.get_aproximation(x, y, out x, out y);
                 foreach (var g in a)
                 {
-                    if (doubles_equal(nauja[0], g.real) && doubles_equal(nauja[1], g.img))
+                    if (doubles_equal(x, g.real) && doubles_equal(y, g.img))
                     {
                         return g;
                     }
                 } 
-                i++;
             }
             return null;
         }
