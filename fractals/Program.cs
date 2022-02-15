@@ -10,8 +10,12 @@ namespace fractals
 {
     static class Program
     {
-        public const int MaxFactorialValue = 12;
         public const double tolerance = 1e-2;
+        public const int width = 2000;
+        public const int height = 2000;
+        public const int iterations = 1000;
+        public const string savePath = @"R:\bitmap.png";
+
 
         /// <summary>
         ///  The main entry point for the application.
@@ -21,9 +25,11 @@ namespace fractals
         {
             Polynomial p = Polynomial.ParseString("x^3-1");
             Console.WriteLine(p);
-            Color[] colors = (from i in Enumerable.Range(0, 20) select Color.FromArgb(255 - i * 10, 255 - i * 10, 255 - i * 10)).ToArray();
+
+            int stepsize = 250 / (p.Degree + 1);
+            Color[] colors = (from i in Enumerable.Range(0, p.Degree + 1) select Color.FromArgb(255 - i * stepsize, 255 - i * stepsize, 255 - i * stepsize)).ToArray();
             
-            Bitmap img = new Bitmap(2000, 2000);
+            Bitmap img = new Bitmap(width, height);
 
             ComplexNumber topLeft = new ComplexNumber() { real = -3, imag = -3 };
             ComplexNumber bottomRight = new ComplexNumber() { real = 3, imag = 3 };
@@ -31,11 +37,11 @@ namespace fractals
             Stopwatch sw = Stopwatch.StartNew();
 
             Console.WriteLine("Initializing block...");
-            Block mb = new Block(2000, 2000, 1e-2);
+            Block mb = new Block(width, height, tolerance);
             Console.WriteLine("Loading polynomial...");
             DllWrapper.LoadPolynomial(p);
             Console.WriteLine("Generating block...");
-            mb.GenerateData(topLeft, bottomRight, 1000);
+            mb.GenerateData(topLeft, bottomRight, iterations);
 
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
@@ -48,7 +54,7 @@ namespace fractals
                 }
             }
 
-            img.Save("R:\\bitmap.png");
+            img.Save(savePath);
         }
     }
 }
