@@ -19,23 +19,23 @@ namespace fractals
         //[STAThread]
         static void Main()
         {
-            Polynomial p = Polynomial.ParseString("x^17-1");
+            Polynomial p = Polynomial.ParseString("x^3-1");
             Console.WriteLine(p);
             Color[] colors = (from i in Enumerable.Range(0, 20) select Color.FromArgb(255 - i * 10, 255 - i * 10, 255 - i * 10)).ToArray();
             
             Bitmap img = new Bitmap(2000, 2000);
 
-            ComplexNumber topLeft = new ComplexNumber() { real = -0.76, imag = -0.76 };
-            ComplexNumber bottomRight = new ComplexNumber() { real = -0.52, imag = -0.52 };
+            ComplexNumber topLeft = new ComplexNumber() { real = -3, imag = -3 };
+            ComplexNumber bottomRight = new ComplexNumber() { real = 3, imag = 3 };
 
             Stopwatch sw = Stopwatch.StartNew();
 
-            Console.WriteLine("Initializing generator...");
-            DllWrapper.GeneratorInit(img.Width, img.Height, tolerance);
+            Console.WriteLine("Initializing block...");
+            Block mb = new Block(2000, 2000, 1e-2);
             Console.WriteLine("Loading polynomial...");
             DllWrapper.LoadPolynomial(p);
             Console.WriteLine("Generating block...");
-            int[,] block = DllWrapper.GenerateBlock(topLeft, bottomRight, 1000);
+            mb.GenerateData(topLeft, bottomRight, 1000);
 
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
@@ -44,7 +44,7 @@ namespace fractals
             {
                 for(int j = 0; j < img.Height; j++)
                 {
-                    img.SetPixel(i, j, colors[block[i, j] + 1]);
+                    img.SetPixel(i, j, colors[mb.GetData(i, j) + 1]);
                 }
             }
 
