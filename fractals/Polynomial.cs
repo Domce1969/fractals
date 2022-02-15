@@ -16,23 +16,28 @@ namespace fractals
     {
         public int power;
         public int coeff;
-        public Term(string s) //diassembles imput string into constituents, e.g. 5x^5
+        public static Term ParseString(string s)
         {
+            int coeff, power;
             int xpos = s.IndexOf('x');
             if(xpos == -1)
             {
-                power = 0;
                 coeff = int.Parse(s);
-            }else if(xpos == s.Length - 1)
+                power = 0;
+            }
+            else if(xpos == s.Length - 1)
             {
-                power = 1;
                 coeff = int.Parse(s.Substring(0, s.Length - 1));
+                power = 1;
             }
             else
             {
-                coeff = int.Parse(s.Substring(0, xpos));
+                string coeffstr = s.Substring(0, xpos);
+                if (!coeffstr.Any(c => char.IsDigit(c))) coeffstr += "1";
+                coeff = int.Parse(coeffstr);
                 power = int.Parse(s.Substring(xpos + 2));
             }
+            return new Term(coeff, power);
         }
         public Term(int coeff, int power)
         {
@@ -57,8 +62,10 @@ namespace fractals
 
         private Polynomial() { }
 
-        public Polynomial(string s) // in the form ax^b+cx^y...
+        public static Polynomial ParseString(string s)
         {
+            Polynomial ans = new Polynomial();
+            s = s.Replace(" ", string.Empty);
             if (s[0] != '+' && s[0] != '-') s = '+' + s;
 
             int lastIndex = 0;
@@ -66,11 +73,12 @@ namespace fractals
             {
                 if(s[i] == '+' || s[i] == '-')
                 {
-                    terms.Add(new Term(s.Substring(lastIndex, i - lastIndex)));
+                    ans.terms.Add(Term.ParseString(s.Substring(lastIndex, i - lastIndex)));
                     lastIndex = i;
                 }
             }
-            terms.Add(new Term(s.Substring(lastIndex)));
+            ans.terms.Add(Term.ParseString(s.Substring(lastIndex)));
+            return ans;
         }
 
         public override string ToString()

@@ -19,13 +19,14 @@ namespace fractals
         //[STAThread]
         static void Main()
         {
-            Polynomial p = new Polynomial("1x^17-1");
+            Polynomial p = Polynomial.ParseString("x^17-1");
+            Console.WriteLine(p);
             Color[] colors = (from i in Enumerable.Range(0, 20) select Color.FromArgb(255 - i * 10, 255 - i * 10, 255 - i * 10)).ToArray();
             
             Bitmap img = new Bitmap(2000, 2000);
 
-            ComplexNumber topLeft = new ComplexNumber() { real = -3, imag = -3 };
-            ComplexNumber bottomRight = new ComplexNumber() { real = 3, imag = 3 };
+            ComplexNumber topLeft = new ComplexNumber() { real = -0.76, imag = -0.76 };
+            ComplexNumber bottomRight = new ComplexNumber() { real = -0.52, imag = -0.52 };
 
             Stopwatch sw = Stopwatch.StartNew();
 
