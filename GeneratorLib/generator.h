@@ -11,7 +11,7 @@ struct block_t;
 
 extern "C" GENERATORLIB_API block_t* __cdecl allocate_block(int32_t width, int32_t height, double compare_tolerance);
 extern "C" GENERATORLIB_API void __cdecl free_block(block_t* block);
-extern "C" GENERATORLIB_API void __cdecl generator_load_polynomial(int32_t* coefficients, int32_t* powers, int32_t len);
+extern "C" GENERATORLIB_API bool __cdecl generator_load_polynomial(int32_t* coefficients, int32_t* powers, int32_t len);
 extern "C" GENERATORLIB_API void __cdecl generator_generate(double ax, double ay, double cx, double cy, int32_t accuracy, block_t* block);
 extern "C" GENERATORLIB_API int32_t** __cdecl generator_read_block(block_t* block, int32_t& width, int32_t& height, double& compare_tolerance);
 

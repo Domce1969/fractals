@@ -42,7 +42,7 @@ void __cdecl free_block(block_t* block) {
 	delete block;
 }
 
-void __cdecl generator_load_polynomial(int32_t* coefficients, int32_t* powers, int32_t len) {
+bool __cdecl generator_load_polynomial(int32_t* coefficients, int32_t* powers, int32_t len) {
 	polynomial_t.coefficients.clear();
 	polynomial_t.powers.clear();
 	polynomial_t.roots.clear();
@@ -78,11 +78,13 @@ void __cdecl generator_load_polynomial(int32_t* coefficients, int32_t* powers, i
 
 				if(!contains) {
 					polynomial_t.roots.push_back(c);
-					if(polynomial_t.roots.size() == polynomial_t.degree) return;
+					if(polynomial_t.roots.size() == polynomial_t.degree) return true;
 				}
 			}
 		}
 	}
+
+	return false;
 }
 
 void __cdecl generator_generate(double ax, double ay, double bx, double by, int32_t iterations, block_t* block) {

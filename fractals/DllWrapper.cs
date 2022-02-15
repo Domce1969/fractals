@@ -72,10 +72,13 @@ namespace fractals
                 powers[i] = p.terms[i].power;
             }
 
-            generator_load_polynomial(coefficients, powers, p.terms.Count);
+            if(!generator_load_polynomial(coefficients, powers, p.terms.Count))
+            {
+                throw new Exception("Failed to find roots for the polynomial");
+            }
         }
 
         [DllImport(@"GeneratorLib.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static unsafe extern void generator_load_polynomial(Int32[] coefficients, Int32[] powers, Int32 len);
+        private static unsafe extern bool generator_load_polynomial(Int32[] coefficients, Int32[] powers, Int32 len);
     }
 }
